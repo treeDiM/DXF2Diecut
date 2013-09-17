@@ -11,23 +11,23 @@ namespace treeDiM.DiecutLib
 {
     class ExporterAI : BaseExporter
     {
+        #region Constructor
         public ExporterAI()
         {
-
         }
+        #endregion
+
+        #region Override BaseExporter
         public override bool CanExport(string fileExt)
         {
             return string.Equals(fileExt, ".ai", StringComparison.CurrentCultureIgnoreCase);
         }
-
         public override void Initialize()
         {
         }
-
         public override void Close()
         {
         }
-
         public override void InternalSave(Stream stream)
         {
             TextWriter writer = new StreamWriter(stream, Encoding.Default);
@@ -38,11 +38,11 @@ namespace treeDiM.DiecutLib
 
             stream.Write(byteArray, 0, textOutput.Length);
         }
-
         public override string ToString()
         {
             return "ExporterAI";
         }
+        #endregion
 
         #region cf2 specific
         private string SaveToString()
