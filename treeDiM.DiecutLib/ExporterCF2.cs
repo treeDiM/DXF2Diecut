@@ -36,7 +36,9 @@ namespace treeDiM.DiecutLib
             ExpBlockRef blockRef = CreateBlockRef(block);
         }
 
-
+        public override void Close()
+        {
+        }
 
         public override void InternalSave(Stream stream)
         {
@@ -48,11 +50,7 @@ namespace treeDiM.DiecutLib
 
             stream.Write(byteArray, 0, textOutput.Length);
         }
-
-        public override void Close()
-        {
-        }
-
+        
         public override string ToString()
         {
             return "ExporterCF2";
@@ -84,9 +82,9 @@ namespace treeDiM.DiecutLib
                 foreach (ExpEntity entity in _entities)
                     if (entity.BelongsBlock(block))
                     {
-                        int tool = PenToTool(entity._pen);
-                        int pt = PenToPt(entity._pen);
-                        ExpSegment seg = entity as ExpSegment;
+                        int tool = PenToTool(entity.Pen);
+                        int pt = PenToPt(entity.Pen);
+                        ExpLine seg = entity as ExpLine;
                         if (null != seg)
                             sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "L,{0},{1},0,{2},{3},{4},{5},0,0.0"
                                 , pt, tool, seg.X0, seg.Y0, seg.X1, seg.Y1));

@@ -60,7 +60,7 @@ namespace DXF2Diecut
             // exit if no valid input file
             if (!File.Exists(inputFileName))
             {
-                Console.WriteLine("Input file {0} does not exists! Exiting...");
+                Console.WriteLine("Input file {0} does not exists! Exiting...", inputFileName);
                 return;
             }
             // check if output file already exist
@@ -76,7 +76,7 @@ namespace DXF2Diecut
                 }
             }
             try
-            {
+            {                
                 // open dxf document
                 DxfDocument dxf = DxfDocument.Load(inputFileName);
                 if (null == dxf)
@@ -86,7 +86,7 @@ namespace DXF2Diecut
                 }
                 if (verbose)
                     Console.WriteLine("FILE VERSION: {0}", dxf.DrawingVariables.AcadVer);
-
+                
                 // ### find exporter
                 BaseExporter exporter = ExporterSet.GetExporterFromExtension(Path.GetExtension(outputFileName));
                 if (null == exporter)
@@ -102,17 +102,16 @@ namespace DXF2Diecut
                 // set authoring tool
                 exporter.AuthoringTool = "DXF2Diecut";
                 // bounding box
-                exporter.SetBoundingBox(-500.0, -500.0, 500.0, 500.0);
-
+                exporter.SetBoundingBox(0.0, 0.0, 100.0, 100.0);
+                
                 // create layers, pens (actually using layers)
                 foreach (var o in dxf.Layers)
                     if (dxf.Layers.GetReferences(o).Count > 0)
                     {
                         exporter.CreateLayer(o.Name);
-                        ExpPen pen = exporter.CreatePen(o.Name);
-                        pen.Attribute = string.Equals(o.Name, "20") ? ExpPen.ToolAttribute.LT_CREASING : ExpPen.ToolAttribute.LT_CUT;
+                        ExpPen pen = exporter.CreatePen(o.Name, string.Equals(o.Name, "20") ? ExpPen.ToolAttribute.LT_CREASING : ExpPen.ToolAttribute.LT_CUT);
                     }
-
+                
                 // create blocks
                 foreach (var o in dxf.Blocks)
                 {
@@ -124,15 +123,18 @@ namespace DXF2Diecut
                 {
                     ExpLayer layer = exporter.GetLayerByName(line.Layer.Name);
                     ExpPen pen = exporter.GetPenByName(line.Layer.Name);
-                    exporter.AddSegment(exporter.GetBlock("default"), layer, pen, line.StartPoint.X, line.StartPoint.Y, line.EndPoint.X, line.EndPoint.Y);
+                    exporter.AddSegment(exporter.GetBlock("default"), layer, pen
+                        , line.StartPoint.X, line.StartPoint.Y, line.EndPoint.X, line.EndPoint.Y);
                 }
                 foreach (netDxf.Entities.Arc arc in dxf.Arcs)
                 {
                     ExpLayer layer = exporter.GetLayerByName(arc.Layer.Name);
                     ExpPen pen = exporter.GetPenByName(arc.Layer.Name);
-                    exporter.AddArc(exporter.GetBlock("default"), layer, pen, arc.Center.X, arc.Center.Y, arc.Radius, arc.StartAngle, arc.EndAngle);
+                    exporter.AddArc(exporter.GetBlock("default"), layer, pen
+                        , arc.Center.X, arc.Center.Y, arc.Radius, arc.StartAngle, arc.EndAngle);
                 }
                 // saving
+                if (verbose) Console.WriteLine("Saving as {0}", outputFileName);
                 exporter.Save(outputFileName);
                 // done!
                 Console.WriteLine("Done!");
@@ -142,8 +144,6 @@ namespace DXF2Diecut
                 Console.WriteLine(ex.ToString());
                 return;
             }
-
-
         }
     }
 }
