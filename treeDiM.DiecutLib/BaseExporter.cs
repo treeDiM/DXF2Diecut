@@ -313,7 +313,7 @@ namespace treeDiM.DiecutLib
         public abstract bool CanExport(string fileExt);
         public abstract void Initialize();
         public abstract void Close();
-        public abstract void InternalSave(Stream stream);
+        public abstract byte[] GetResultByteArray();
         #endregion
 
         #region Pens
@@ -514,6 +514,14 @@ namespace treeDiM.DiecutLib
 #endif
             return true;
         }
+
+        private void InternalSave(Stream stream)
+        {
+            TextWriter writer = new StreamWriter(stream, Encoding.Default);
+            byte[] byteArray = GetResultByteArray();
+            stream.Write(byteArray, 0, byteArray.Length);
+        }
+
         #endregion
 
         #region IDisposable implementation

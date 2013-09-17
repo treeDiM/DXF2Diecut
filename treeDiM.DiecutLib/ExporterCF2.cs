@@ -40,15 +40,13 @@ namespace treeDiM.DiecutLib
         {
         }
 
-        public override void InternalSave(Stream stream)
+        public override byte[] GetResultByteArray()
         {
-            TextWriter writer = new StreamWriter(stream, Encoding.Default);
             string textOutput = SaveToString();
             byte[] byteArray = new byte[textOutput.Length];
             for (int i = 0; i < textOutput.Length; ++i)
                 byteArray[i] = Convert.ToByte(textOutput[i]);
-
-            stream.Write(byteArray, 0, textOutput.Length);
+            return byteArray;
         }
         
         public override string ToString()
