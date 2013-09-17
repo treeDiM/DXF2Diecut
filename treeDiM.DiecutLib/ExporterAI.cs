@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Globalization;
+using System.Reflection;
 #endregion
 
 namespace treeDiM.DiecutLib
@@ -44,20 +45,22 @@ namespace treeDiM.DiecutLib
         }
         #endregion
 
-        #region cf2 specific
+        #region Adobe Illustrator (*.ai) Format specific
         private string SaveToString()
         {
             StringBuilder sb = new StringBuilder();
 
             const double INCH2MM = 72.0 / 25.4;
-            double xminP = _xmin * INCH2MM;
-            double yminP = _ymin * INCH2MM;
-            double xmaxP = _xmax * INCH2MM;
-            double ymaxP = _ymax * INCH2MM;
-            double w = xmaxP - xminP;
-            double h = ymaxP - yminP;
-            int ix0 = (int)xminP;
-            int iy0 = (int)yminP;
+            double xminInch = _xmin * INCH2MM;
+            double yminInch = _ymin * INCH2MM;
+            double xmaxInch = _xmax * INCH2MM;
+            double ymaxInch = _ymax * INCH2MM;
+            double wMM = _xmax - _xmin;
+            double hMM = _ymax - _ymin;
+            double wInch = xmaxInch - xminInch;
+            double hInch = ymaxInch - yminInch;
+            int ix0 = (int)xminInch;
+            int iy0 = (int)yminInch;
 
             sb.AppendLine("%!PS-Adobe-3.0 EPSF-3.0");
             sb.AppendLine(string.Format("%%Creator: {0}", AuthoringTool));
@@ -65,10 +68,10 @@ namespace treeDiM.DiecutLib
             sb.AppendLine(string.Format("%%CreationDate:({0})", DateTime.Now.ToShortDateString()));
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture
                 , "%%BoundingBox:{0:0.##} {1:0.##} {2:0.##} {3:0.##}"
-                , xminP - 1.0, yminP - 1.0, xmaxP + 1.0, ymaxP + 1.0));
+                , xminInch - 1.0, yminInch - 1.0, xmaxInch + 1.0, ymaxInch + 1.0));
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture
                 , "%%HiResBoundingBox:{0:0.##} {1:0.##} {2:0.##} {3:0.##}"
-                , xminP, yminP, xmaxP, ymaxP));
+                , xminInch, yminInch, xmaxInch, ymaxInch));
             sb.AppendLine("%%DocumentProcessColors: Cyan Magenta Yellow Black");
             sb.AppendLine("%%DocumentNeededResources: procset Adobe_level2_AI5 1.2 0");
             sb.AppendLine("%%+ procset Adobe_blend_AI5 1.0 0");
@@ -86,26 +89,25 @@ namespace treeDiM.DiecutLib
                 else sb.AppendLine(string.Format("%+ {0} ({1})", _pens[i].ColorString_CMYK, _pens[i].Name));
             }
             sb.AppendLine(string.Format("%AI3_TemplateBox:{0:0.###} {1:0.###} {2:0.###} {3:0.###}"
-                , ix0 + (int)(w / 2.0)
-                , iy0 + (int)(h / 2.0)
-                , ix0 + (int)(w / 2.0)
-                , iy0 + (int)(h / 2.0)));
-            sb.AppendLine(string.Format("%AI5_ArtSize: {0} {1}", w, h));
+                , ix0 + (int)(wInch / 2.0)
+                , iy0 + (int)(hInch / 2.0)
+                , ix0 + (int)(wInch / 2.0)
+                , iy0 + (int)(hInch / 2.0)));
+            sb.AppendLine(string.Format("%AI5_ArtSize: {0} {1}", wInch, hInch));
             sb.AppendLine("%AI5_RulerUnits: 1");
             sb.AppendLine(string.Format("%AI5_NumLayers: {0}", _layers.Count));
             sb.AppendLine("%AI3_DocumentPreview: None");
             int zm = -4;
-            if ((w < 1200.0) || (h < 1000.0)) zm = -2;
-            if ((w < 600.0) || (h < 500.0)) zm = -1;
-            if ((w > 4400.0) || (h > 3000.0)) zm = -8;
+            if ((wInch < 1200.0) || (hInch < 1000.0)) zm = -2;
+            if ((wInch < 600.0) || (hInch < 500.0)) zm = -1;
+            if ((wInch > 4400.0) || (hInch > 3000.0)) zm = -8;
             sb.AppendLine(string.Format("%AI5_OpenToView: {0:0.##} {1:0.##} {2} 1242 702 26 1 0 19 79 0 0",
-                _xmin - w / 5.0, _ymin + h / 5.0, zm));
+                xminInch - wInch / 5.0, yminInch + hInch / 5.0, zm));
             sb.AppendLine("%AI5_OpenViewLayers: 2222");
             sb.AppendLine("%%EndComments");
             sb.AppendLine("%%BeginProlog");
-            sb.AppendLine("%%IncludeResource: procset Adobe_level2_AI5 1.2 0");
-            sb.AppendLine("%%IncludeResource: procset Adobe_blend_AI5 1.0 0");
-            sb.AppendLine("%%IncludeResource: procset Adobe_Illustrator_AI5 1.0 0");
+            string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            sb.AppendLine(LoadFileAsString(Path.Combine(assemblyFolder, "Resource_AI5.txt")));
             sb.AppendLine("%%EndProlog");
             sb.AppendLine("%%BeginSetup");
             sb.AppendLine("Adobe_level2_AI5 /initialize get exec");
@@ -133,11 +135,10 @@ namespace treeDiM.DiecutLib
                 {
                     if (entity.Pen != pen) continue;
                     // initialize pen
-                    int ep_line = (int)((w > h ? w : h) * 5.0 / 2000.0);
+
+                    int ep_line = (int)((wMM > hMM ? wMM : hMM) * 5.0 / 2000.0);
                     if (ep_line < 1) ep_line = 1;
                     if (ep_line > 10) ep_line = 10;
-                    int ep_line_2 = (int)ep_line / 2;
-                    if (ep_line_2 < 1) ep_line_2 = 1;
 
                     sb.AppendLine(string.Format("{0} ({1}) 0 X", pen.ColorString_CMYK, pen.Name)); // 0 1 1 0 K\n   CUT
                     sb.AppendLine("0 j");

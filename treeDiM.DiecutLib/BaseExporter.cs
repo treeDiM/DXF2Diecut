@@ -541,6 +541,27 @@ namespace treeDiM.DiecutLib
         {
             _xmin = xmin; _ymin = ymin; _xmax = xmax; _ymax = ymax;
         }
+
+        protected string LoadFileAsString(string filePath)
+        {
+            // check that file is available
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("File {0} does not exists", filePath);
+                return string.Empty;
+            }
+            // load file line by line
+            StringBuilder sb = new StringBuilder();
+            using (StreamReader sr = new StreamReader(filePath))
+            {
+                // Read and display lines from the file until the end of 
+                // the file is reached.
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                    sb.AppendLine(line);
+            }
+            return sb.ToString();
+        }
         #endregion
 
         #region Data members
