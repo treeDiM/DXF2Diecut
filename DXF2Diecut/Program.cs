@@ -109,7 +109,9 @@ namespace DXF2Diecut
                     if (dxf.Layers.GetReferences(o).Count > 0)
                     {
                         exporter.CreateLayer(o.Name);
-                        ExpPen pen = exporter.CreatePen(o.Name, string.Equals(o.Name, "20") ? ExpPen.ToolAttribute.LT_CREASING : ExpPen.ToolAttribute.LT_CUT);
+                        ExpPen pen = exporter.CreatePen(
+                            string.Equals(o.Name, "20") ? ExpPen.ToolAttribute.LT_CREASING : ExpPen.ToolAttribute.LT_CUT
+                            , o.Name);
                     }
                 
                 // create blocks

@@ -313,17 +313,32 @@ namespace treeDiM.DiecutLib
         public abstract bool CanExport(string fileExt);
         public abstract void Initialize();
         public abstract void Close();
-        public abstract byte[] GetResultByteArray();
+        public abstract byte[] GetResultByteArrayInternal();
         #endregion
 
         #region Pens
-        public ExpPen CreatePen(string name, ExpPen.ToolAttribute attribute)
+        public ExpPen CreatePen(ExpPen.ToolAttribute attribute)
+        {
+            string name = string.Empty;
+            switch (attribute)
+            {
+                case ExpPen.ToolAttribute.LT_CONSTRUCTION: name = "Construction"; break;
+                case ExpPen.ToolAttribute.LT_COTATION: name = "Cotation"; break;
+                case ExpPen.ToolAttribute.LT_CREASING: name = "Crease"; break;
+                case ExpPen.ToolAttribute.LT_CUT: name = "Cut"; break;
+                case ExpPen.ToolAttribute.LT_HALFCUT: name = "Halfcut"; break;
+                case ExpPen.ToolAttribute.LT_PERFOCREASING: name = "Perfocreasing"; break;
+                default: break;
+            }
+            return CreatePen(attribute, name);
+        }
+        public ExpPen CreatePen(ExpPen.ToolAttribute attribute, string name)
         {
             ExpPen pen = new ExpPen(_penInc++, name, attribute);
             _pens.Add(pen);
             return pen;
         }
-        public ExpPen CreatePen(uint id, string name, ExpPen.ToolAttribute attribute)
+        public ExpPen CreatePen(ExpPen.ToolAttribute attribute,  string name, uint id )
         {
             ExpPen pen = new ExpPen(id, name, attribute);
             _pens.Add(pen);
@@ -332,6 +347,14 @@ namespace treeDiM.DiecutLib
         public ExpPen GetPenByName(string name)
         {
             return _pens.Find(p => string.Equals(p.Name, name, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        public ExpPen GetPenByAttribute(ExpPen.ToolAttribute attribute)
+        {
+            ExpPen pen = _pens.Find(p => p.Attribute == attribute);
+            if (null == pen)
+                pen = CreatePen(attribute);
+            return pen;
         }
         #endregion
 
@@ -349,8 +372,11 @@ namespace treeDiM.DiecutLib
             return layer;
         }
         public ExpLayer GetLayerByName(string name)
-        { 
-            return _layers.Find(l => string.Equals(l._name, name, StringComparison.CurrentCultureIgnoreCase));
+        {
+            ExpLayer layer = _layers.Find(l => string.Equals(l._name, name, StringComparison.CurrentCultureIgnoreCase));
+            if (null == layer)
+                layer = CreateLayer(name);
+            return layer;
         }
         #endregion
 
@@ -387,16 +413,20 @@ namespace treeDiM.DiecutLib
         #region Bounding Box / Sort
         private void ComputeBoundingBox()
         {
-            _xmin = double.MaxValue;
-            _ymin = double.MaxValue;
-            _xmax = double.MinValue;
-            _ymax = double.MinValue;
-            foreach (ExpEntity entity in _entities)
+            // only compute bounding box if no valid bounding box was set before
+            if (_xmax < _xmin || _ymax < _ymin)
             {
-                _xmin = Math.Min(_xmin, entity.XMin);
-                _xmax = Math.Max(_xmax, entity.XMax);
-                _ymin = Math.Min(_ymin, entity.YMin);
-                _ymax = Math.Max(_ymax, entity.YMax);
+                _xmin = double.MaxValue;
+                _ymin = double.MaxValue;
+                _xmax = double.MinValue;
+                _ymax = double.MinValue;
+                foreach (ExpEntity entity in _entities)
+                {
+                    _xmin = Math.Min(_xmin, entity.XMin);
+                    _xmax = Math.Max(_xmax, entity.XMax);
+                    _ymin = Math.Min(_ymin, entity.YMin);
+                    _ymax = Math.Max(_ymax, entity.YMax);
+                }
             }
         }
         private void SortEntities()
@@ -470,8 +500,6 @@ namespace treeDiM.DiecutLib
         /// </remarks>
         public bool Save(string file)
         {
-            // set bounding box
-            ComputeBoundingBox();
             // set name of file
             FileInfo fileInfo = new FileInfo(file);
             if (string.IsNullOrEmpty(Name))
@@ -520,6 +548,13 @@ namespace treeDiM.DiecutLib
             TextWriter writer = new StreamWriter(stream, Encoding.Default);
             byte[] byteArray = GetResultByteArray();
             stream.Write(byteArray, 0, byteArray.Length);
+        }
+        public byte[] GetResultByteArray()
+        {
+            // computes bounding box when needed
+            ComputeBoundingBox();
+            // actually generate file content
+            return GetResultByteArrayInternal();
         }
 
         #endregion

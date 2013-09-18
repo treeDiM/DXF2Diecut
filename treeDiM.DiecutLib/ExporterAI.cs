@@ -29,7 +29,7 @@ namespace treeDiM.DiecutLib
         public override void Close()
         {
         }
-        public override byte[] GetResultByteArray()
+        public override byte[] GetResultByteArrayInternal()
         {
             string textOutput = SaveToString();
             byte[] byteArray = new byte[textOutput.Length];
