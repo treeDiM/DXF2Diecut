@@ -200,6 +200,7 @@ namespace treeDiM.DiecutLib
                             sb.AppendLine(string.Format(CultureInfo.InvariantCulture
                                 , "{0:0.##} {1:0.##} {2:0.##} {3:0.##} {4:0.##} {5:0.##} c", x2 * INCH2MM, y2 * INCH2MM, x3 * INCH2MM, y3 * INCH2MM, x4 * INCH2MM, y4 * INCH2MM));
                             sb.AppendLine("S");
+                            ang1 = ang2;
                         }
                     }
                 }

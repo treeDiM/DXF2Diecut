@@ -1,7 +1,9 @@
-﻿using System;
+﻿#region Using directives
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+#endregion
 
 namespace treeDiM.DiecutLib
 {
@@ -18,7 +20,7 @@ namespace treeDiM.DiecutLib
                 };
 
             foreach (BaseExporter exporter in exporters)
-                if (exporter.CanExport(fileExt))
+                if (exporter.CanExport(fileExt.StartsWith(".") ? fileExt : "."+fileExt ))
                     return exporter;
             return null;
         }
