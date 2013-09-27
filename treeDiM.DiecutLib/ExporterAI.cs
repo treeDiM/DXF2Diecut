@@ -129,79 +129,30 @@ namespace treeDiM.DiecutLib
                 sb.AppendLine("0 R");
                 sb.AppendLine("u");     // u : démarre l’association,  U : fin de l’association
 
+                // initialize pen
+                int ep_line = (int)((wMM > hMM ? wMM : hMM) * 5.0 / 2000.0);
+                if (ep_line < 1) ep_line = 1;
+                if (ep_line > 10) ep_line = 10;
+
+                sb.AppendLine(string.Format("{0} ({1}) 0 X", pen.ColorString_CMYK, pen.Name)); // 0 1 1 0 K\n   CUT
+                sb.AppendLine("0 j");
+                sb.AppendLine("0 J");
+                sb.AppendLine(string.Format("{0} w", ep_line));
+
+                // first draw entities that do not belong a block
                 foreach (ExpEntity entity in _entities)
                 {
-                    if (entity.Pen != pen) continue;
-                    // initialize pen
-
-                    int ep_line = (int)((wMM > hMM ? wMM : hMM) * 5.0 / 2000.0);
-                    if (ep_line < 1) ep_line = 1;
-                    if (ep_line > 10) ep_line = 10;
-
-                    sb.AppendLine(string.Format("{0} ({1}) 0 X", pen.ColorString_CMYK, pen.Name)); // 0 1 1 0 K\n   CUT
-                    sb.AppendLine("0 j");
-                    sb.AppendLine("0 J");
-                    sb.AppendLine(string.Format("{0} w", ep_line));
-
-                    ExpLine line = entity as ExpLine;
-                    if (null != line)
+                    if (null == entity._block)
+                        ExportEntity(ref sb, pen, null, entity);
+                }
+                // then, draws all blockrefs
+                foreach (ExpBlockRef blockRef in _blockRefs)
+                {
+                    foreach (ExpEntity expEntity in _entities)
                     {
-                        sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0:0.###} {1:0.###} m", line.X0 * INCH2MM, line.Y0 * INCH2MM));
-                        sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0:0.###} {1:0.###} L", line.X1 * INCH2MM, line.Y1 * INCH2MM));
-                        sb.AppendLine("S");
-                         
-                    }
-                    ExpArc arc = entity as ExpArc;
-                    if (null != arc)
-                    {
-                        // divide arc if necessary
-                        int iStep = (int)Math.Ceiling(arc.OpeningAngle / 91.0);
-
-                        iStep = iStep >= 1 ? iStep : 1;
-
-                        const double rad = Math.PI / 180.0;
-                        const double paga = 1.0;
-                        double angleStep = arc.OpeningAngle / iStep;
-                        double ang1 = arc.Angle0;
-                        double xc = arc.Xcenter;
-                        double yc = arc.Ycenter;
-                        double dim = arc.Radius;
-                        double dir = arc.Angle0;
-
-                        for (int i = 0; i < iStep; ++i)
-                        {
-                            double ang2 = ang1 + angleStep;
-                            // control points of elipse arc in ellipse local coord
-                            double x1 = arc.Radius * Math.Cos((ang1 - dir) * rad);
-                            double y1f = arc.Radius * paga * Math.Sin((ang1 - dir) * rad);
-                            double x4 = dim * Math.Cos((ang2 - dir) * rad);
-                            double y4 = dim * paga * Math.Sin((ang2 - dir) * rad);
-                            double dx1 = -dim * Math.Sin((ang1 - dir) * rad);
-                            double dy1 = dim * paga * Math.Cos((ang1 - dir) * rad);
-                            double dx4 = -dim * Math.Sin((ang2 - dir) * rad);
-                            double dy4 = dim * paga * Math.Cos((ang2 - dir) * rad);
-                            double alpha = Math.Sin((ang2 - ang1) * rad) * ((Math.Sqrt(4.0 + 3.0 * Math.Atan(0.5 * (ang2 - ang1) * rad) * Math.Atan(0.5 * (ang2 - ang1) * rad))) - 1.0f) / 3.0f;
-                            double x2 = x1 + alpha * dx1;
-                            double y2 = y1f + alpha * dy1;
-                            double x3 = x4 - alpha * dx4;
-                            double y3 = y4 - alpha * dy4;
-                            // rotation
-                            Rotation(ref x1, ref y1f, x1, y1f, Math.Cos(dir * rad), Math.Sin(dir * rad));
-                            Rotation(ref x2, ref y2, x2, y2, Math.Cos(dir * rad), Math.Sin(dir * rad));
-                            Rotation(ref x3, ref y3, x3, y3, Math.Cos(dir * rad), Math.Sin(dir * rad));
-                            Rotation(ref x4, ref y4, x4, y4, Math.Cos(dir * rad), Math.Sin(dir * rad));
-                            // translation
-                            x1 += xc; y1f += yc;
-                            x2 += xc; y2 += yc;
-                            x3 += xc; y3 += yc;
-                            x4 += xc; y4 += yc;
-                            sb.AppendLine(string.Format(CultureInfo.InvariantCulture
-                                , "{0:0.##} {1:0.##} m", x1 * INCH2MM, y1f * INCH2MM));
-                            sb.AppendLine(string.Format(CultureInfo.InvariantCulture
-                                , "{0:0.##} {1:0.##} {2:0.##} {3:0.##} {4:0.##} {5:0.##} c", x2 * INCH2MM, y2 * INCH2MM, x3 * INCH2MM, y3 * INCH2MM, x4 * INCH2MM, y4 * INCH2MM));
-                            sb.AppendLine("S");
-                            ang1 = ang2;
-                        }
+                        if (!expEntity.BelongsBlock(blockRef._block))
+                            continue;
+                        ExportEntity(ref sb, pen, blockRef, expEntity);
                     }
                 }
                 sb.AppendLine("U");
@@ -219,6 +170,89 @@ namespace treeDiM.DiecutLib
             sb.AppendLine("%%EOF");
 
             return sb.ToString();
+        }
+
+        void ExportEntity(ref StringBuilder sb, ExpPen pen, ExpBlockRef blockRef, ExpEntity entity)
+        { 
+            const double INCH2MM = 72.0 / 25.4;
+
+            if (entity.Pen != pen) return;
+
+            ExpLine line = entity as ExpLine;
+            if (null != line)
+            {
+                double X0 = line.X0, Y0 = line.Y0, X1 = line.X1, Y1 = line.Y1;
+                if (null != blockRef)
+                    blockRef.TransformPoint(line.X0, line.Y0, out X0, out Y0);
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0:0.###} {1:0.###} m", X0 * INCH2MM, Y0 * INCH2MM));
+                if (null != blockRef)
+                    blockRef.TransformPoint(line.X1, line.Y1, out X1, out Y1);
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0:0.###} {1:0.###} L", X1 * INCH2MM, Y1 * INCH2MM));
+                sb.AppendLine("S");                         
+            }
+            ExpArc arc = entity as ExpArc;
+            if (null != arc)
+            {
+                // divide arc if necessary
+                int iStep = (int)Math.Ceiling(arc.OpeningAngle / 91.0);
+
+                iStep = iStep >= 1 ? iStep : 1;
+
+                const double rad = Math.PI / 180.0;
+                const double paga = 1.0;
+                double angleStep = arc.OpeningAngle / iStep;
+                double ang1 = arc.Angle0;
+                double xc = arc.Xcenter;
+                double yc = arc.Ycenter;
+                double dim = arc.Radius;
+                double dir = arc.Angle0;
+
+                for (int i = 0; i < iStep; ++i)
+                {
+                    double ang2 = ang1 + angleStep;
+                    // control points of elipse arc in ellipse local coord
+                    double x1 = arc.Radius * Math.Cos((ang1 - dir) * rad);
+                    double y1f = arc.Radius * paga * Math.Sin((ang1 - dir) * rad);
+                    double x4 = dim * Math.Cos((ang2 - dir) * rad);
+                    double y4 = dim * paga * Math.Sin((ang2 - dir) * rad);
+                    double dx1 = -dim * Math.Sin((ang1 - dir) * rad);
+                    double dy1 = dim * paga * Math.Cos((ang1 - dir) * rad);
+                    double dx4 = -dim * Math.Sin((ang2 - dir) * rad);
+                    double dy4 = dim * paga * Math.Cos((ang2 - dir) * rad);
+                    double alpha = Math.Sin((ang2 - ang1) * rad) * ((Math.Sqrt(4.0 + 3.0 * Math.Atan(0.5 * (ang2 - ang1) * rad) * Math.Atan(0.5 * (ang2 - ang1) * rad))) - 1.0f) / 3.0f;
+                    double x2 = x1 + alpha * dx1;
+                    double y2 = y1f + alpha * dy1;
+                    double x3 = x4 - alpha * dx4;
+                    double y3 = y4 - alpha * dy4;
+                    // rotation
+                    Rotation(ref x1, ref y1f, x1, y1f, Math.Cos(dir * rad), Math.Sin(dir * rad));
+                    Rotation(ref x2, ref y2, x2, y2, Math.Cos(dir * rad), Math.Sin(dir * rad));
+                    Rotation(ref x3, ref y3, x3, y3, Math.Cos(dir * rad), Math.Sin(dir * rad));
+                    Rotation(ref x4, ref y4, x4, y4, Math.Cos(dir * rad), Math.Sin(dir * rad));
+                    // translation
+                    x1 += xc; y1f += yc;
+                    x2 += xc; y2 += yc;
+                    x3 += xc; y3 += yc;
+                    x4 += xc; y4 += yc;
+
+                    double X1 = x1, Y1 = y1f;
+                    if (null != blockRef)   blockRef.TransformPoint(x1, y1f, out X1, out Y1);
+                    double X2 = x2, Y2 = y2;
+                    if (null != blockRef)   blockRef.TransformPoint(x2, y2, out X2, out Y2);
+                    double X3 = x3, Y3 = y3;
+                    if (null != blockRef)   blockRef.TransformPoint(x3, y3, out X3, out Y3);
+                    double X4 = x4, Y4 = y4;
+                    if (null != blockRef)   blockRef.TransformPoint(x4, y4, out X4, out Y4);
+
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture
+                        , "{0:0.##} {1:0.##} m", X1 * INCH2MM, Y1 * INCH2MM));
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture
+                        , "{0:0.##} {1:0.##} {2:0.##} {3:0.##} {4:0.##} {5:0.##} c"
+                        , X2 * INCH2MM, Y2 * INCH2MM, X3 * INCH2MM, Y3 * INCH2MM, X4 * INCH2MM, Y4 * INCH2MM));
+                    sb.AppendLine("S");
+                    ang1 = ang2;
+                }
+            }
         }
 
         void Rotation(ref double x, ref double y, double x0, double y0, double cod, double sid)

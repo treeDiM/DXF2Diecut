@@ -46,6 +46,17 @@ namespace treeDiM.DiecutLib
             _scaleY = 1.0;
         }
         #endregion
+        #region Transformation
+        public void TransformPoint(double xIn, double yIn, out double xOut, out double yOut)
+        {
+            double angleRad = _dir * System.Math.PI / 180.0;
+            double cosAngle = System.Math.Cos(angleRad);
+            double sinAngle = System.Math.Sin(angleRad);
+
+            xOut = _x + xIn * cosAngle + yIn * sinAngle;
+            yOut = _y + yIn * cosAngle - yIn * sinAngle;
+        }
+        #endregion
         #region Data members
         public ExpBlock _block;
         public double _x, _y, _dir, _scaleX, _scaleY;

@@ -86,7 +86,7 @@ namespace DXF2Diecut
                 }
                 if (verbose)
                     Console.WriteLine("FILE VERSION: {0}", dxf.DrawingVariables.AcadVer);
-                
+                // ###
                 // ### find exporter
                 BaseExporter exporter = ExporterSet.GetExporterFromExtension(Path.GetExtension(outputFileName));
                 if (null == exporter)
@@ -103,7 +103,6 @@ namespace DXF2Diecut
                 exporter.AuthoringTool = "DXF2Diecut";
                 // bounding box
                 exporter.SetBoundingBox(0.0, 0.0, 100.0, 100.0);
-                
                 // create layers, pens (actually using layers)
                 foreach (var o in dxf.Layers)
                     if (dxf.Layers.GetReferences(o).Count > 0)
@@ -112,28 +111,31 @@ namespace DXF2Diecut
                         ExpPen pen = exporter.CreatePen(
                             string.Equals(o.Name, "20") ? ExpPen.ToolAttribute.LT_CREASING : ExpPen.ToolAttribute.LT_CUT
                             , o.Name);
-                    }
-                
+                    }                
                 // create blocks
                 foreach (var o in dxf.Blocks)
                 {
+                    netDxf.Blocks.Block b = o as netDxf.Blocks.Block;
                     if (verbose)
-                        Console.WriteLine("Processing block : {0}", o.Name);
+                        Console.WriteLine(string.Format("Block: {0}, entities = {1}", b.Name, b.Entities.Count));
                 }
-                // entities
+                // lines
                 foreach (netDxf.Entities.Line line in dxf.Lines)
                 {
                     ExpLayer layer = exporter.GetLayerByName(line.Layer.Name);
                     ExpPen pen = exporter.GetPenByName(line.Layer.Name);
                     exporter.AddSegment(exporter.GetBlock("default"), layer, pen
-                        , line.StartPoint.X, line.StartPoint.Y, line.EndPoint.X, line.EndPoint.Y);
+                        , line.StartPoint.X, line.StartPoint.Y
+                        , line.EndPoint.X, line.EndPoint.Y);
                 }
+                // arcs
                 foreach (netDxf.Entities.Arc arc in dxf.Arcs)
                 {
                     ExpLayer layer = exporter.GetLayerByName(arc.Layer.Name);
                     ExpPen pen = exporter.GetPenByName(arc.Layer.Name);
                     exporter.AddArc(exporter.GetBlock("default"), layer, pen
-                        , arc.Center.X, arc.Center.Y, arc.Radius, arc.StartAngle, arc.EndAngle);
+                        , arc.Center.X, arc.Center.Y, arc.Radius
+                        , arc.StartAngle, arc.EndAngle);
                 }
                 // saving
                 if (verbose) Console.WriteLine("Saving as {0}", outputFileName);
