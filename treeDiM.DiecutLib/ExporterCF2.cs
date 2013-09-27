@@ -88,24 +88,8 @@ namespace treeDiM.DiecutLib
                         ExpArc arc = entity as ExpArc;
                         if (null != arc)
                         {
-                            double xbeg = 0.0, ybeg = 0.0, xend = 0.0, yend = 0.0;
-                            if (arc.OpeningAngle > 0)
-                            {
-                                xbeg = arc.Xbeg;
-                                ybeg = arc.Ybeg;
-                                xend = arc.Xend;
-                                yend = arc.Yend;
-                            }
-                            else
-                            {
-                                xbeg = arc.Xend;
-                                ybeg = arc.Yend;
-                                xend = arc.Xbeg;
-                                yend = arc.Ybeg;
-                            }
-
                             sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "A,{0},{1},0,{2},{3},{4},{5},{6},{7},1,0,0.0"
-                                , pt, tool, xbeg, ybeg, xend, yend, arc.Xcenter, arc.Ycenter));
+                                , pt, tool, arc.Xbeg, arc.Ybeg, arc.Xend, arc.Yend, arc.Xcenter, arc.Ycenter));
                         }
                     };
                 sb.AppendLine("END");

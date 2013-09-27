@@ -307,7 +307,11 @@ namespace treeDiM.DiecutLib
         public double Angle1
         { get { return _angle1; } }
         public double OpeningAngle
-        { get { return _angle1-_angle0; } }
+        {   get
+            {
+                return _angle1-_angle0;
+            }
+        }
         #endregion
         #region Data members
         private double _xc, _yc;
@@ -406,7 +410,10 @@ namespace treeDiM.DiecutLib
         {
             ExpBlock block = GetBlock(name);
             if (null == block)
+            {
                 block = CreateBlock(name);
+                CreateBlockRef(block);
+            }
             return block;
         }
         #endregion

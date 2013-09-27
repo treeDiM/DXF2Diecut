@@ -124,7 +124,7 @@ namespace DXF2Diecut
                 {
                     ExpLayer layer = exporter.GetLayerByName(line.Layer.Name);
                     ExpPen pen = exporter.GetPenByName(line.Layer.Name);
-                    exporter.AddSegment(exporter.GetBlock("default"), layer, pen
+                    exporter.AddSegment(exporter.GetBlockOrCreate("default"), layer, pen
                         , line.StartPoint.X, line.StartPoint.Y
                         , line.EndPoint.X, line.EndPoint.Y);
                 }
@@ -133,10 +133,14 @@ namespace DXF2Diecut
                 {
                     ExpLayer layer = exporter.GetLayerByName(arc.Layer.Name);
                     ExpPen pen = exporter.GetPenByName(arc.Layer.Name);
-                    exporter.AddArc(exporter.GetBlock("default"), layer, pen
+                    exporter.AddArc(exporter.GetBlockOrCreate("default"), layer, pen
                         , arc.Center.X, arc.Center.Y, arc.Radius
                         , arc.StartAngle, arc.EndAngle);
                 }
+                // create at list one blockref
+                if (null != exporter.GetBlock("default"))
+                    exporter.CreateBlockRef(exporter.GetBlock("default"));
+
                 // saving
                 if (verbose) Console.WriteLine("Saving as {0}", outputFileName);
                 exporter.Save(outputFileName);
