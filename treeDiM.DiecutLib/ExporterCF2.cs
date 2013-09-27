@@ -30,10 +30,6 @@ namespace treeDiM.DiecutLib
             penToolMap[ExpPen.ToolAttribute.LT_HALFCUT] = 4;
             penToolMap[ExpPen.ToolAttribute.LT_CONSTRUCTION] = 43;
             penToolMap[ExpPen.ToolAttribute.LT_COTATION] = 46;
-            // create default block
-            ExpBlock block = CreateBlock("default");
-            // create default block ref
-            ExpBlockRef blockRef = CreateBlockRef(block);
         }
 
         public override void Close()
@@ -70,8 +66,11 @@ namespace treeDiM.DiecutLib
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "UR,{0},{1}", _xmax, _ymax));
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "SCALE,{0},{1}", 1.0, 1.0));
             foreach (ExpBlockRef blockRef in _blockRefs)
+            {
+                if (null == blockRef._block) continue;
                 sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "C,MODEL{0},{1},{2},{3},{4},{5}"
                     , blockRef._block._id, blockRef._x, blockRef._y, blockRef._dir, blockRef._scaleX, blockRef._scaleY));
+            }
             sb.AppendLine("END");
             // ### MAIN : end
             foreach (ExpBlock block in _blocks)
@@ -88,8 +87,26 @@ namespace treeDiM.DiecutLib
                                 , pt, tool, seg.X0, seg.Y0, seg.X1, seg.Y1));
                         ExpArc arc = entity as ExpArc;
                         if (null != arc)
+                        {
+                            double xbeg = 0.0, ybeg = 0.0, xend = 0.0, yend = 0.0;
+                            if (arc.OpeningAngle > 0)
+                            {
+                                xbeg = arc.Xbeg;
+                                ybeg = arc.Ybeg;
+                                xend = arc.Xend;
+                                yend = arc.Yend;
+                            }
+                            else
+                            {
+                                xbeg = arc.Xend;
+                                ybeg = arc.Yend;
+                                xend = arc.Xbeg;
+                                yend = arc.Ybeg;
+                            }
+
                             sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "A,{0},{1},0,{2},{3},{4},{5},{6},{7},1,0,0.0"
-                                , pt, tool, arc.Xbeg, arc.Ybeg, arc.Xend, arc.Yend, arc.Xcenter, arc.Ycenter));
+                                , pt, tool, xbeg, ybeg, xend, yend, arc.Xcenter, arc.Ycenter));
+                        }
                     };
                 sb.AppendLine("END");
             }

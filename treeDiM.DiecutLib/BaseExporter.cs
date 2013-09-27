@@ -402,8 +402,19 @@ namespace treeDiM.DiecutLib
         { 
             return _blocks.Find(b => string.Equals(b._name, name, StringComparison.CurrentCultureIgnoreCase));
         }
+        public ExpBlock GetBlockOrCreate(string name)
+        {
+            ExpBlock block = GetBlock(name);
+            if (null == block)
+                block = CreateBlock(name);
+            return block;
+        }
+        #endregion
+
+        #region BlockRef
         public ExpBlockRef CreateBlockRef(ExpBlock block)
         {
+            if (null == block) return null;
             ExpBlockRef blockRef = new ExpBlockRef(block, 0.0, 0.0, 0.0);
             _blockRefs.Add(blockRef);
             return blockRef;
