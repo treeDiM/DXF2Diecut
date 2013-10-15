@@ -100,7 +100,7 @@ namespace treeDiM.DiecutLib
             if ((wInch < 600.0) || (hInch < 500.0)) zm = -1;
             if ((wInch > 4400.0) || (hInch > 3000.0)) zm = -8;
             sb.AppendLine(string.Format("%AI5_OpenToView: {0:0.##} {1:0.##} {2} 1242 702 26 1 0 19 79 0 0",
-                xminInch - wInch / 5.0, yminInch + hInch / 5.0, zm));
+                xminInch - wInch / 5.0, ymaxInch + hInch / 5.0, zm));
             sb.AppendLine("%AI5_OpenViewLayers: 2222");
             sb.AppendLine("%%EndComments");
             sb.AppendLine("%%BeginProlog");
@@ -148,6 +148,10 @@ namespace treeDiM.DiecutLib
                 // then, draws all blockrefs
                 foreach (ExpBlockRef blockRef in _blockRefs)
                 {
+                    sb.AppendLine("U");
+                    sb.AppendLine("0 A");
+                    sb.AppendLine("0 R");
+                    sb.AppendLine("u");
                     foreach (ExpEntity expEntity in _entities)
                     {
                         if (!expEntity.BelongsBlock(blockRef._block))
