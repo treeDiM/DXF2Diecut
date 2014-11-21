@@ -86,7 +86,7 @@ namespace treeDiM.DiecutLib
                             sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "L,{0},{1},0,{2},{3},{4},{5},0,0.0"
                                 , pt, tool, seg.X0, seg.Y0, seg.X1, seg.Y1));
                         ExpArc arc = entity as ExpArc;
-                        if (null != arc)
+                        if (null != arc && arc.Radius > _epsilon)
                         {
                             sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "A,{0},{1},0,{2},{3},{4},{5},{6},{7},1,0,0.0"
                                 , pt, tool, arc.Xbeg, arc.Ybeg, arc.Xend, arc.Yend, arc.Xcenter, arc.Ycenter));
@@ -111,6 +111,7 @@ namespace treeDiM.DiecutLib
         #endregion
 
         #region Data members
+        private const double _epsilon = 1.0E-06;
         private Dictionary<ExpPen.ToolAttribute, int> penToolMap = new Dictionary<ExpPen.ToolAttribute, int>();
         #endregion
     }
