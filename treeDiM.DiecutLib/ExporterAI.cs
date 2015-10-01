@@ -64,10 +64,12 @@ namespace treeDiM.DiecutLib
             sb.AppendLine(string.Format("%%Creator: {0}", AuthoringTool));
             sb.AppendLine(string.Format("%%Title: ({0})", Name));
             sb.AppendLine(string.Format("%%CreationDate:({0})", DateTime.Now.ToShortDateString()));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture
+            sb.AppendLine(string.Format(
+                CultureInfo.InvariantCulture
                 , "%%BoundingBox:{0:0.##} {1:0.##} {2:0.##} {3:0.##}"
                 , xminInch - 1.0, yminInch - 1.0, xmaxInch + 1.0, ymaxInch + 1.0));
-            sb.AppendLine(string.Format(CultureInfo.InvariantCulture
+            sb.AppendLine(string.Format(
+                CultureInfo.InvariantCulture
                 , "%%HiResBoundingBox:{0:0.##} {1:0.##} {2:0.##} {3:0.##}"
                 , xminInch, yminInch, xmaxInch, ymaxInch));
             sb.AppendLine("%%DocumentProcessColors: Cyan Magenta Yellow Black");
@@ -86,20 +88,26 @@ namespace treeDiM.DiecutLib
                 if (i == 0) sb.AppendLine(string.Format("%CMYKCustomColor: {0} ({1})", _pens[i].ColorString_CMYK, _pens[i].Name));
                 else sb.AppendLine(string.Format("%+ {0} ({1})", _pens[i].ColorString_CMYK, _pens[i].Name));
             }
-            sb.AppendLine(string.Format("%AI3_TemplateBox:{0:0.###} {1:0.###} {2:0.###} {3:0.###}"
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture
+                , "%AI3_TemplateBox:{0:0.###} {1:0.###} {2:0.###} {3:0.###}"
                 , ix0 + (int)(wInch / 2.0)
                 , iy0 + (int)(hInch / 2.0)
                 , ix0 + (int)(wInch / 2.0)
                 , iy0 + (int)(hInch / 2.0)));
-            sb.AppendLine(string.Format("%AI5_ArtSize: {0} {1}", wInch, hInch));
+            sb.AppendLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "%AI5_ArtSize: {0:0.##} {1:0.##}", wInch, hInch));
             sb.AppendLine("%AI5_RulerUnits: 1");
-            sb.AppendLine(string.Format("%AI5_NumLayers: {0}", _layers.Count));
+            sb.AppendLine(string.Format(
+                "%AI5_NumLayers: {0}", _layers.Count));
             sb.AppendLine("%AI3_DocumentPreview: None");
             int zm = -4;
             if ((wInch < 1200.0) || (hInch < 1000.0)) zm = -2;
             if ((wInch < 600.0) || (hInch < 500.0)) zm = -1;
             if ((wInch > 4400.0) || (hInch > 3000.0)) zm = -8;
-            sb.AppendLine(string.Format("%AI5_OpenToView: {0:0.##} {1:0.##} {2} 1242 702 26 1 0 19 79 0 0",
+            sb.AppendLine(string.Format(
+                CultureInfo.InvariantCulture,
+                "%AI5_OpenToView: {0:0.##} {1:0.##} {2} 1242 702 26 1 0 19 79 0 0",
                 xminInch - wInch / 5.0, ymaxInch + hInch / 5.0, zm));
             sb.AppendLine("%AI5_OpenViewLayers: 2222");
             sb.AppendLine("%%EndComments");
@@ -188,10 +196,16 @@ namespace treeDiM.DiecutLib
                 double X0 = line.X0, Y0 = line.Y0, X1 = line.X1, Y1 = line.Y1;
                 if (null != blockRef)
                     blockRef.TransformPoint(line.X0, line.Y0, out X0, out Y0);
-                sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0:0.###} {1:0.###} m", X0 * INCH2MM, Y0 * INCH2MM));
+                sb.AppendLine(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0:0.###} {1:0.###} m",
+                    X0 * INCH2MM, Y0 * INCH2MM));
                 if (null != blockRef)
                     blockRef.TransformPoint(line.X1, line.Y1, out X1, out Y1);
-                sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "{0:0.###} {1:0.###} L", X1 * INCH2MM, Y1 * INCH2MM));
+                sb.AppendLine(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0:0.###} {1:0.###} L",
+                    X1 * INCH2MM, Y1 * INCH2MM));
                 sb.AppendLine("S");                         
             }
             ExpArc arc = entity as ExpArc;
@@ -248,11 +262,13 @@ namespace treeDiM.DiecutLib
                     double X4 = x4, Y4 = y4;
                     if (null != blockRef)   blockRef.TransformPoint(x4, y4, out X4, out Y4);
 
-                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture
-                        , "{0:0.##} {1:0.##} m", X1 * INCH2MM, Y1 * INCH2MM));
-                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture
-                        , "{0:0.##} {1:0.##} {2:0.##} {3:0.##} {4:0.##} {5:0.##} c"
-                        , X2 * INCH2MM, Y2 * INCH2MM, X3 * INCH2MM, Y3 * INCH2MM, X4 * INCH2MM, Y4 * INCH2MM));
+                    sb.AppendLine(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.##} {1:0.##} m",
+                        X1 * INCH2MM, Y1 * INCH2MM));
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "{0:0.##} {1:0.##} {2:0.##} {3:0.##} {4:0.##} {5:0.##} c",
+                        X2 * INCH2MM, Y2 * INCH2MM, X3 * INCH2MM, Y3 * INCH2MM, X4 * INCH2MM, Y4 * INCH2MM));
                     sb.AppendLine("S");
                     ang1 = ang2;
                 }

@@ -47,6 +47,9 @@
     <Compile Include="ExporterSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resource_AI5.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy "$(ProjectDir)Resource_AI5.txt" "$(SolutionDir)DXF2Diecut\$(OutDir)Resource_AI5.txt"</PostBuildEvent>
