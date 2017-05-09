@@ -130,7 +130,7 @@ namespace treeDiM.DiecutLib
             {
                 // using CMYK color
                 sb.AppendLine("%AI5_BeginLayer");
-                sb.AppendLine(string.Format("1 1 1 1 0 0 -1 {0} Lb", _pens[penIndex].ColorString_RGB));
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "1 1 1 1 0 0 -1 {0} Lb", _pens[penIndex].ColorString_RGB));
                 sb.AppendLine(string.Format("({0}) Ln", pen.Name)); // Cut
 
                 sb.AppendLine("0 A");

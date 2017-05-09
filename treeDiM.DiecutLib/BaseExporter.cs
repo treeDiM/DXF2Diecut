@@ -103,7 +103,7 @@ namespace treeDiM.DiecutLib
                 double BP = (double)colorDesc[2] / 255.0;
                 double K = 1.0 - Math.Max(Math.Max(RP, GP), Math.Max(GP, BP));
 
-                return string.Format("{0:0.####} {1:0.####} {2:0.####} {3:0.####}", (1-RP-K)/(1-K), (1-GP-K)/(1-K), (1-BP-K)/(1-K), K); 
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.####} {1:0.####} {2:0.####} {3:0.####}", (1-RP-K)/(1-K), (1-GP-K)/(1-K), (1-BP-K)/(1-K), K); 
             }
         }
         public string ColorString_RGB
