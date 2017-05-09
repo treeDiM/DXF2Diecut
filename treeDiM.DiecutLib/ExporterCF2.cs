@@ -91,6 +91,11 @@ namespace treeDiM.DiecutLib
                             sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "A,{0},{1},0,{2},{3},{4},{5},{6},{7},1,0,0.0"
                                 , pt, tool, arc.Xbeg, arc.Ybeg, arc.Xend, arc.Yend, arc.Xcenter, arc.Ycenter));
                         }
+                        ExpText text = entity as ExpText;
+                        if (null != text)
+                        {
+                            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, ""));
+                        }
                     };
                 sb.AppendLine("END");
             }

@@ -319,6 +319,34 @@ namespace treeDiM.DiecutLib
         private double _angle0, _angle1;
         #endregion
     }
+    public class ExpText : ExpEntity
+    {
+        #region Constructor
+        public ExpText(ExpBlock block, ExpLayer layer, ExpPen pen, double xt, double yt, string text)
+            : base(block, layer, pen)
+        {
+            _xt = xt;
+            _yt = yt;
+            _text = text;
+        }
+        #endregion
+        #region ExpEntity override
+        public override double X(int i) { return XT; }
+        public override double Y(int i) { return YT; }
+        public override double XMin { get { return XT; } }
+        public override double XMax { get { return XT; } }
+        public override double YMin { get { return YT; } }
+        public override double YMax { get { return YT; } }
+        #endregion
+        #region Public properties
+        public double XT { get { return _xt; } }
+        public double YT { get { return _yt; } }
+        #endregion
+        #region Data members
+        public double _xt, _yt;
+        public string _text;
+        #endregion
+    }
     #endregion
 
     #region BaseExporter
@@ -436,6 +464,10 @@ namespace treeDiM.DiecutLib
         public void AddArc(ExpBlock block, ExpLayer layer, ExpPen pen, double xc, double yc, double radius, double angle0, double angle1)
         {
             _entities.Add(new ExpArc(block, layer, pen, xc, yc, radius, angle0, angle1));
+        }
+        public void AddText(ExpBlock block, ExpLayer layer, ExpPen pen, double xt, double yt, string text)
+        {
+            _entities.Add(new ExpText(block, layer, pen, xt, yt, text));
         }
         #endregion
 
